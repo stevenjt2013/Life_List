@@ -8,6 +8,8 @@
   :root {
     --green: #2D6A4F;
     --green-dark: #1B4332;
+    --blue: #1D4ED8;
+    --blue-dark: #1E3A8A;
     --gray-50: #F9FAFB;
     --gray-100: #F3F4F6;
     --gray-200: #E5E7EB;
@@ -24,6 +26,7 @@
     --red-border: #FCA5A5;
     --radius: 10px;
     --radius-sm: 6px;
+    --tab-color: var(--green);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -76,7 +79,7 @@
   .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
   .login-note { font-size: 12px; color: var(--gray-400); margin-top: 1rem; }
 
-  /* ── App (hidden until logged in) ── */
+  /* ── App ── */
   #app { display: none; }
 
   /* ── Header ── */
@@ -124,6 +127,63 @@
   }
   .btn-signout:hover { background: var(--gray-100); }
 
+  /* ── Tabs ── */
+  .tabs-bar {
+    background: white;
+    border-bottom: 1px solid var(--gray-200);
+    position: sticky;
+    top: 57px;
+    z-index: 9;
+  }
+  .tabs-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    display: flex;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 13px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    color: var(--gray-500);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: color .15s, border-color .15s;
+  }
+  .tab-btn .tab-icon { font-size: 16px; }
+  .tab-btn .tab-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: var(--gray-200);
+    color: var(--gray-600);
+    padding: 1px 7px;
+    border-radius: 20px;
+    transition: background .15s, color .15s;
+  }
+  .tab-btn.active-personal {
+    color: var(--green);
+    border-bottom-color: var(--green);
+  }
+  .tab-btn.active-personal .tab-badge {
+    background: #D1FAE5;
+    color: #065F46;
+  }
+  .tab-btn.active-work {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+  .tab-btn.active-work .tab-badge {
+    background: #DBEAFE;
+    color: #1E3A8A;
+  }
+
   /* ── Layout ── */
   main { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
 
@@ -134,7 +194,11 @@
     border-radius: var(--radius);
     padding: 1.25rem;
     margin-bottom: 1.5rem;
+    border-top: 3px solid var(--tab-color);
   }
+  body.tab-work .form-card { --tab-color: var(--blue); }
+  body.tab-personal .form-card { --tab-color: var(--green); }
+
   .form-title {
     font-size: 12px;
     font-weight: 600;
@@ -171,6 +235,12 @@
     border-color: #6EE7B7;
     box-shadow: 0 0 0 3px rgba(45,106,79,.08);
   }
+  body.tab-work .field input:focus,
+  body.tab-work .field textarea:focus,
+  body.tab-work .field select:focus {
+    border-color: #93C5FD;
+    box-shadow: 0 0 0 3px rgba(29,78,216,.08);
+  }
   .field textarea { resize: vertical; min-height: 65px; line-height: 1.5; }
   .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .btn-add {
@@ -190,6 +260,8 @@
   .btn-add:hover { background: var(--green-dark); }
   .btn-add:active { transform: scale(.98); }
   .btn-add:disabled { opacity: .6; cursor: not-allowed; }
+  body.tab-work .btn-add { background: var(--blue); }
+  body.tab-work .btn-add:hover { background: var(--blue-dark); }
 
   /* ── Toolbar ── */
   .toolbar {
@@ -214,6 +286,7 @@
   }
   .chip:hover { border-color: var(--gray-400); }
   .chip.active { background: var(--green); border-color: var(--green); color: white; }
+  body.tab-work .chip.active { background: var(--blue); border-color: var(--blue); }
   .sort-wrap { display: flex; align-items: center; gap: 6px; }
   .sort-wrap label { font-size: 12px; color: var(--gray-500); white-space: nowrap; }
   .sort-wrap select {
@@ -261,6 +334,7 @@
     cursor: pointer;
     accent-color: var(--green);
   }
+  body.tab-work .chk-wrap input[type=checkbox] { accent-color: var(--blue); }
   .task-body { flex: 1; min-width: 0; }
   .task-title {
     font-size: 15px;
@@ -291,7 +365,8 @@
   .tag-date    { background: var(--gray-100); color: var(--gray-600); }
   .tag-today   { background: var(--amber-bg); color: var(--amber-text); border: 1px solid var(--amber-border); }
   .tag-overdue { background: var(--red-bg); color: var(--red-text); border: 1px solid var(--red-border); }
-  .tag-cat     { background: #ECFDF5; color: #065F46; }
+  .tag-cat-personal { background: #ECFDF5; color: #065F46; }
+  .tag-cat-work     { background: #EFF6FF; color: #1E40AF; }
   .tag-high    { background: #FFF7ED; color: #9A3412; border: 1px solid #FDBA74; }
 
   /* ── Delete button ── */
@@ -338,12 +413,12 @@
   }
 </style>
 </head>
-<body>
+<body class="tab-personal">
 
 <!-- Login Screen -->
 <div id="login-screen">
   <div class="login-brand">Life<em>List</em></div>
-  <p class="login-sub">Your personal to-do list — synced across all your devices</p>
+  <p class="login-sub">Your personal &amp; work to-do list — synced across all your devices</p>
   <button class="btn-google" onclick="signIn()">
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -371,9 +446,26 @@
     </div>
   </header>
 
+  <!-- Tab Bar -->
+  <div class="tabs-bar">
+    <div class="tabs-inner">
+      <button class="tab-btn active-personal" id="tab-personal" onclick="switchTab('personal')">
+        <span class="tab-icon">🏠</span>
+        Personal Life
+        <span class="tab-badge" id="badge-personal">0</span>
+      </button>
+      <button class="tab-btn" id="tab-work" onclick="switchTab('work')">
+        <span class="tab-icon">💼</span>
+        Work
+        <span class="tab-badge" id="badge-work">0</span>
+      </button>
+    </div>
+  </div>
+
   <main>
+    <!-- Add Task Form -->
     <div class="form-card">
-      <div class="form-title">Add a task</div>
+      <div class="form-title" id="form-title">Add a personal task</div>
       <div class="field">
         <label>Task</label>
         <input type="text" id="f-title" placeholder="What do you need to do?" autocomplete="off">
@@ -396,13 +488,7 @@
         <div class="field">
           <label>Category</label>
           <select id="f-cat">
-            <option value="">No category</option>
-            <option>Errand</option>
-            <option>Home</option>
-            <option>Health</option>
-            <option>Social</option>
-            <option>Finance</option>
-            <option>Other</option>
+            <!-- Options injected by switchTab() -->
           </select>
         </div>
         <div class="field">
@@ -416,6 +502,7 @@
       <button class="btn-add" id="add-btn" onclick="addTask()">+ Add task</button>
     </div>
 
+    <!-- Filters & Sort -->
     <div class="toolbar">
       <div class="filters">
         <button class="chip active" onclick="setFilter('all', this)">All</button>
@@ -436,7 +523,7 @@
     <div id="list"><div class="loading">Loading your tasks...</div></div>
   </main>
 
-  <footer>LifeList &mdash; your personal to-do list</footer>
+  <footer>LifeList &mdash; your personal &amp; work to-do list</footer>
 </div>
 
 <!-- Firebase SDKs -->
@@ -463,10 +550,48 @@
 
   let tasks = [];
   let filter = 'all';
+  let currentTab = 'personal';
   let currentUser = null;
   let unsubscribe = null;
 
-  // ── Auth ──────────────────────────────────────────────────
+  // ── Category options per tab ──────────────────────────────────────────────
+  const CATEGORIES = {
+    personal: ['Errand', 'Home', 'Health', 'Social', 'Finance', 'Other'],
+    work:     ['Meeting', 'Project', 'Email', 'Report', 'Deadline', 'Other']
+  };
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  window.switchTab = (tab) => {
+    currentTab = tab;
+    filter = 'all';
+
+    // Body class for CSS theming
+    document.body.className = 'tab-' + tab;
+
+    // Active tab button
+    document.getElementById('tab-personal').className = 'tab-btn' + (tab === 'personal' ? ' active-personal' : '');
+    document.getElementById('tab-work').className     = 'tab-btn' + (tab === 'work'     ? ' active-work'     : '');
+
+    // Form title
+    document.getElementById('form-title').textContent =
+      tab === 'personal' ? 'Add a personal task' : 'Add a work task';
+
+    // Add button label
+    document.getElementById('add-btn').textContent = '+ Add task';
+
+    // Category options
+    const catSel = document.getElementById('f-cat');
+    catSel.innerHTML = '<option value="">No category</option>' +
+      CATEGORIES[tab].map(c => `<option>${c}</option>`).join('');
+
+    // Reset filter chips
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    document.querySelector('.chip').classList.add('active');
+
+    render();
+  };
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
   window.signIn = async () => {
     try { await signInWithPopup(auth, provider); }
     catch(e) { console.error(e); alert('Sign-in failed. Please try again.'); }
@@ -484,6 +609,8 @@
       document.getElementById('app').style.display = 'block';
       const av = document.getElementById('user-avatar');
       if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; }
+      // Initialise category select for default tab
+      switchTab('personal');
       subscribeToTasks(user.uid);
     } else {
       currentUser = null;
@@ -493,7 +620,7 @@
     }
   });
 
-  // ── Firestore sync ────────────────────────────────────────
+  // ── Firestore sync ────────────────────────────────────────────────────────
   function subscribeToTasks(uid) {
     if (unsubscribe) unsubscribe();
     const q = query(collection(db, 'tasks'), where('uid', '==', uid));
@@ -504,7 +631,7 @@
     });
   }
 
-  // ── Add task ──────────────────────────────────────────────
+  // ── Add task ──────────────────────────────────────────────────────────────
   window.addTask = async () => {
     const title = document.getElementById('f-title').value.trim();
     if (!title || !currentUser) return;
@@ -516,6 +643,7 @@
     try {
       await addDoc(collection(db, 'tasks'), {
         uid:   currentUser.uid,
+        tab:   currentTab,          // ← stores which tab the task belongs to
         title,
         note:  document.getElementById('f-note').value.trim(),
         date:  document.getElementById('f-date').value,
@@ -538,19 +666,19 @@
     btn.textContent = '+ Add task';
   };
 
-  // ── Toggle done ───────────────────────────────────────────
+  // ── Toggle done ───────────────────────────────────────────────────────────
   window.toggle = async (id, done) => {
     try { await updateDoc(doc(db, 'tasks', id), { done: !done }); }
     catch(e) { console.error(e); }
   };
 
-  // ── Delete ────────────────────────────────────────────────
+  // ── Delete ────────────────────────────────────────────────────────────────
   window.remove = async (id) => {
     try { await deleteDoc(doc(db, 'tasks', id)); }
     catch(e) { console.error(e); }
   };
 
-  // ── Filter / Sort ─────────────────────────────────────────
+  // ── Filter / Sort ─────────────────────────────────────────────────────────
   window.setFilter = (f, el) => {
     filter = f;
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -580,12 +708,18 @@
     return s;
   }
 
+  // Tasks for the currently active tab
+  function tabTasks() {
+    return tasks.filter(t => (t.tab || 'personal') === currentTab);
+  }
+
   function getVisible() {
     const today = todayStr();
-    if (filter === 'today')    return tasks.filter(t => !t.done && t.date === today);
-    if (filter === 'upcoming') return tasks.filter(t => !t.done && t.date && t.date > today);
-    if (filter === 'done')     return tasks.filter(t => t.done);
-    return [...tasks];
+    const base  = tabTasks();
+    if (filter === 'today')    return base.filter(t => !t.done && t.date === today);
+    if (filter === 'upcoming') return base.filter(t => !t.done && t.date && t.date > today);
+    if (filter === 'done')     return base.filter(t => t.done);
+    return [...base];
   }
 
   function getSorted(list) {
@@ -604,12 +738,19 @@
     return list;
   }
 
-  // ── Render ────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
   window.render = () => {
     const today = todayStr();
-    const remaining = tasks.filter(t => !t.done).length;
+    const allTab = tabTasks();
+    const remaining = allTab.filter(t => !t.done).length;
     document.getElementById('stats').textContent =
       remaining + ' task' + (remaining === 1 ? '' : 's') + ' remaining';
+
+    // Update tab badges (remaining count per tab)
+    const pRemaining = tasks.filter(t => (t.tab||'personal') === 'personal' && !t.done).length;
+    const wRemaining = tasks.filter(t => t.tab === 'work' && !t.done).length;
+    document.getElementById('badge-personal').textContent = pRemaining;
+    document.getElementById('badge-work').textContent     = wRemaining;
 
     const visible = getSorted(getVisible());
     const listEl  = document.getElementById('list');
@@ -649,7 +790,8 @@
       else if (isToday) dateTag = `<span class="tag tag-today">${esc(ds)}</span>`;
       else              dateTag = `<span class="tag tag-date">${esc(ds)}</span>`;
     }
-    const catTag = t.cat ? `<span class="tag tag-cat">${esc(t.cat)}</span>` : '';
+    const catClass = (t.tab || 'personal') === 'work' ? 'tag-cat-work' : 'tag-cat-personal';
+    const catTag = t.cat ? `<span class="tag ${catClass}">${esc(t.cat)}</span>` : '';
     const priTag = t.pri === 'high' && !t.done ? `<span class="tag tag-high">High priority</span>` : '';
 
     const cls = ['task-card',
