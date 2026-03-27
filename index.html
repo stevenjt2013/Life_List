@@ -33,6 +33,52 @@
     min-height: 100vh;
   }
 
+  /* ── Login screen ── */
+  #login-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+  }
+  .login-brand {
+    font-family: Georgia, serif;
+    font-size: 42px;
+    font-weight: normal;
+    letter-spacing: -1px;
+    margin-bottom: .5rem;
+  }
+  .login-brand em { font-style: normal; color: var(--green); }
+  .login-sub {
+    font-size: 15px;
+    color: var(--gray-500);
+    margin-bottom: 2.5rem;
+  }
+  .btn-google {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 24px;
+    background: white;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--gray-700);
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    transition: box-shadow .15s, transform .1s;
+  }
+  .btn-google:hover { box-shadow: 0 3px 8px rgba(0,0,0,.12); }
+  .btn-google:active { transform: scale(.98); }
+  .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .login-note { font-size: 12px; color: var(--gray-400); margin-top: 1rem; }
+
+  /* ── App (hidden until logged in) ── */
+  #app { display: none; }
+
   /* ── Header ── */
   header {
     background: white;
@@ -48,6 +94,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 1rem;
   }
   .brand {
     font-family: Georgia, serif;
@@ -56,7 +103,26 @@
     letter-spacing: -0.5px;
   }
   .brand em { font-style: normal; color: var(--green); }
+  .header-right { display: flex; align-items: center; gap: 12px; }
   .header-stats { font-size: 13px; color: var(--gray-400); }
+  .user-info { display: flex; align-items: center; gap: 8px; }
+  .user-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .btn-signout {
+    font-size: 12px;
+    color: var(--gray-500);
+    background: none;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-sm);
+    padding: 3px 9px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .12s;
+  }
+  .btn-signout:hover { background: var(--gray-100); }
 
   /* ── Layout ── */
   main { max-width: 700px; margin: 0 auto; padding: 1.5rem 1rem 4rem; }
@@ -123,6 +189,7 @@
   }
   .btn-add:hover { background: var(--green-dark); }
   .btn-add:active { transform: scale(.98); }
+  .btn-add:disabled { opacity: .6; cursor: not-allowed; }
 
   /* ── Toolbar ── */
   .toolbar {
@@ -194,7 +261,6 @@
     cursor: pointer;
     accent-color: var(--green);
   }
-
   .task-body { flex: 1; min-width: 0; }
   .task-title {
     font-size: 15px;
@@ -243,14 +309,20 @@
   }
   .del-btn:hover { background: var(--red-bg); color: var(--red-text); }
 
-  /* ── Empty state ── */
+  /* ── Loading / Empty ── */
+  .loading {
+    text-align: center;
+    padding: 3rem 0;
+    color: var(--gray-400);
+    font-size: 14px;
+  }
   .empty {
     text-align: center;
     padding: 3.5rem 0;
     color: var(--gray-400);
     font-size: 14px;
   }
-  .empty p { margin-top: .4rem; font-size: 13px; color: var(--gray-400); }
+  .empty p { margin-top: .4rem; font-size: 13px; }
 
   footer {
     text-align: center;
@@ -262,140 +334,229 @@
   @media (max-width: 480px) {
     .row2 { grid-template-columns: 1fr; }
     .toolbar { flex-direction: column; align-items: flex-start; }
+    .header-stats { display: none; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-inner">
-    <span class="brand">Life<em>List</em></span>
-    <span class="header-stats" id="stats">0 tasks remaining</span>
-  </div>
-</header>
+<!-- Login Screen -->
+<div id="login-screen">
+  <div class="login-brand">Life<em>List</em></div>
+  <p class="login-sub">Your personal to-do list — synced across all your devices</p>
+  <button class="btn-google" onclick="signIn()">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+    </svg>
+    Sign in with Google
+  </button>
+  <p class="login-note">Only you can see your tasks</p>
+</div>
 
-<main>
+<!-- Main App -->
+<div id="app">
+  <header>
+    <div class="header-inner">
+      <span class="brand">Life<em>List</em></span>
+      <div class="header-right">
+        <span class="header-stats" id="stats">0 tasks remaining</span>
+        <div class="user-info">
+          <img class="user-avatar" id="user-avatar" src="" alt="" style="display:none">
+          <button class="btn-signout" onclick="signOut()">Sign out</button>
+        </div>
+      </div>
+    </div>
+  </header>
 
-  <div class="form-card">
-    <div class="form-title">Add a task</div>
-    <div class="field">
-      <label>Task</label>
-      <input type="text" id="f-title" placeholder="What do you need to do?" autocomplete="off">
-    </div>
-    <div class="field">
-      <label>Notes</label>
-      <textarea id="f-note" placeholder="Any details or reminders..."></textarea>
-    </div>
-    <div class="row2">
+  <main>
+    <div class="form-card">
+      <div class="form-title">Add a task</div>
       <div class="field">
-        <label>Due date</label>
-        <input type="date" id="f-date">
+        <label>Task</label>
+        <input type="text" id="f-title" placeholder="What do you need to do?" autocomplete="off">
       </div>
       <div class="field">
-        <label>Time</label>
-        <input type="time" id="f-time">
+        <label>Notes</label>
+        <textarea id="f-note" placeholder="Any details or reminders..."></textarea>
       </div>
+      <div class="row2">
+        <div class="field">
+          <label>Due date</label>
+          <input type="date" id="f-date">
+        </div>
+        <div class="field">
+          <label>Time</label>
+          <input type="time" id="f-time">
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Category</label>
+          <select id="f-cat">
+            <option value="">No category</option>
+            <option>Errand</option>
+            <option>Home</option>
+            <option>Health</option>
+            <option>Social</option>
+            <option>Finance</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Priority</label>
+          <select id="f-pri">
+            <option value="normal">Normal</option>
+            <option value="high">High</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-add" id="add-btn" onclick="addTask()">+ Add task</button>
     </div>
-    <div class="row2">
-      <div class="field">
-        <label>Category</label>
-        <select id="f-cat">
-          <option value="">No category</option>
-          <option>Errand</option>
-          <option>Home</option>
-          <option>Health</option>
-          <option>Social</option>
-          <option>Finance</option>
-          <option>Other</option>
+
+    <div class="toolbar">
+      <div class="filters">
+        <button class="chip active" onclick="setFilter('all', this)">All</button>
+        <button class="chip" onclick="setFilter('today', this)">Today</button>
+        <button class="chip" onclick="setFilter('upcoming', this)">Upcoming</button>
+        <button class="chip" onclick="setFilter('done', this)">Done</button>
+      </div>
+      <div class="sort-wrap">
+        <label for="sort-sel">Sort by</label>
+        <select id="sort-sel" onchange="render()">
+          <option value="added">Date added</option>
+          <option value="due">Due date</option>
+          <option value="priority">Priority</option>
         </select>
       </div>
-      <div class="field">
-        <label>Priority</label>
-        <select id="f-pri">
-          <option value="normal">Normal</option>
-          <option value="high">High</option>
-        </select>
-      </div>
     </div>
-    <button class="btn-add" onclick="addTask()">+ Add task</button>
-  </div>
 
-  <div class="toolbar">
-    <div class="filters">
-      <button class="chip active" onclick="setFilter('all', this)">All</button>
-      <button class="chip" onclick="setFilter('today', this)">Today</button>
-      <button class="chip" onclick="setFilter('upcoming', this)">Upcoming</button>
-      <button class="chip" onclick="setFilter('done', this)">Done</button>
-    </div>
-    <div class="sort-wrap">
-      <label for="sort-sel">Sort by</label>
-      <select id="sort-sel" onchange="render()">
-        <option value="added">Date added</option>
-        <option value="due">Due date</option>
-        <option value="priority">Priority</option>
-      </select>
-    </div>
-  </div>
+    <div id="list"><div class="loading">Loading your tasks...</div></div>
+  </main>
 
-  <div id="list"></div>
+  <footer>LifeList &mdash; your personal to-do list</footer>
+</div>
 
-</main>
+<!-- Firebase SDKs -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, updateDoc, deleteDoc, doc, query, where, onSnapshot, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
-<footer>LifeList &mdash; your personal to-do list</footer>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCybRO_oqOzKHwB94fVL3I485CLBu9EMjw",
+    authDomain: "lifelist-1938c.firebaseapp.com",
+    projectId: "lifelist-1938c",
+    storageBucket: "lifelist-1938c.firebasestorage.app",
+    messagingSenderId: "834084521886",
+    appId: "1:834084521886:web:5ffd82684228703b0d788f"
+  };
 
-<script>
+  const fbApp  = initializeApp(firebaseConfig);
+  const auth   = getAuth(fbApp);
+  const db     = getFirestore(fbApp);
+  const provider = new GoogleAuthProvider();
+
   let tasks = [];
   let filter = 'all';
+  let currentUser = null;
+  let unsubscribe = null;
 
-  function load() {
-    try {
-      const s = localStorage.getItem('lifelist');
-      if (s) tasks = JSON.parse(s);
-    } catch(e) { tasks = []; }
-    render();
-  }
+  // ── Auth ──────────────────────────────────────────────────
+  window.signIn = async () => {
+    try { await signInWithPopup(auth, provider); }
+    catch(e) { console.error(e); alert('Sign-in failed. Please try again.'); }
+  };
 
-  function save() {
-    try { localStorage.setItem('lifelist', JSON.stringify(tasks)); } catch(e) {}
-  }
+  window.signOut = async () => {
+    if (unsubscribe) unsubscribe();
+    await fbSignOut(auth);
+  };
 
-  function addTask() {
-    const title = document.getElementById('f-title').value.trim();
-    if (!title) { document.getElementById('f-title').focus(); return; }
-    tasks.unshift({
-      id:    Date.now(),
-      title,
-      note:  document.getElementById('f-note').value.trim(),
-      date:  document.getElementById('f-date').value,
-      time:  document.getElementById('f-time').value,
-      cat:   document.getElementById('f-cat').value,
-      pri:   document.getElementById('f-pri').value,
-      done:  false,
-      added: Date.now()
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUser = user;
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+      const av = document.getElementById('user-avatar');
+      if (user.photoURL) { av.src = user.photoURL; av.style.display = 'block'; }
+      subscribeToTasks(user.uid);
+    } else {
+      currentUser = null;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      tasks = [];
+    }
+  });
+
+  // ── Firestore sync ────────────────────────────────────────
+  function subscribeToTasks(uid) {
+    if (unsubscribe) unsubscribe();
+    const q = query(collection(db, 'tasks'), where('uid', '==', uid));
+    unsubscribe = onSnapshot(q, snap => {
+      tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }))
+        .sort((a, b) => (b.added?.seconds || 0) - (a.added?.seconds || 0));
+      render();
     });
-    ['f-title','f-note','f-date','f-time'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f-cat').value = '';
-    document.getElementById('f-pri').value = 'normal';
-    save(); render();
-    document.getElementById('f-title').focus();
   }
 
-  function toggle(id) {
-    const t = tasks.find(t => t.id === id);
-    if (t) { t.done = !t.done; save(); render(); }
-  }
+  // ── Add task ──────────────────────────────────────────────
+  window.addTask = async () => {
+    const title = document.getElementById('f-title').value.trim();
+    if (!title || !currentUser) return;
 
-  function remove(id) {
-    tasks = tasks.filter(t => t.id !== id);
-    save(); render();
-  }
+    const btn = document.getElementById('add-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
 
-  function setFilter(f, el) {
+    try {
+      await addDoc(collection(db, 'tasks'), {
+        uid:   currentUser.uid,
+        title,
+        note:  document.getElementById('f-note').value.trim(),
+        date:  document.getElementById('f-date').value,
+        time:  document.getElementById('f-time').value,
+        cat:   document.getElementById('f-cat').value,
+        pri:   document.getElementById('f-pri').value,
+        done:  false,
+        added: serverTimestamp()
+      });
+      ['f-title','f-note','f-date','f-time'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('f-cat').value = '';
+      document.getElementById('f-pri').value = 'normal';
+      document.getElementById('f-title').focus();
+    } catch(e) {
+      console.error(e);
+      alert('Could not save task. Check your connection.');
+    }
+
+    btn.disabled = false;
+    btn.textContent = '+ Add task';
+  };
+
+  // ── Toggle done ───────────────────────────────────────────
+  window.toggle = async (id, done) => {
+    try { await updateDoc(doc(db, 'tasks', id), { done: !done }); }
+    catch(e) { console.error(e); }
+  };
+
+  // ── Delete ────────────────────────────────────────────────
+  window.remove = async (id) => {
+    try { await deleteDoc(doc(db, 'tasks', id)); }
+    catch(e) { console.error(e); }
+  };
+
+  // ── Filter / Sort ─────────────────────────────────────────
+  window.setFilter = (f, el) => {
     filter = f;
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     el.classList.add('active');
     render();
-  }
+  };
 
   function todayStr() {
     const d = new Date();
@@ -443,7 +604,8 @@
     return list;
   }
 
-  function render() {
+  // ── Render ────────────────────────────────────────────────
+  window.render = () => {
     const today = todayStr();
     const remaining = tasks.filter(t => !t.done).length;
     document.getElementById('stats').textContent =
@@ -454,10 +616,10 @@
 
     if (!visible.length) {
       const msgs = {
-        all:      ['Nothing here yet',       'Add your first task above.'],
-        today:    ['Nothing due today',       'Enjoy your day!'],
-        upcoming: ['Nothing upcoming',        "You're all caught up."],
-        done:     ['No completed tasks yet',  'Check something off your list.']
+        all:      ['Nothing here yet',      'Add your first task above.'],
+        today:    ['Nothing due today',      'Enjoy your day!'],
+        upcoming: ['Nothing upcoming',       "You're all caught up."],
+        done:     ['No completed tasks yet', 'Check something off your list.']
       };
       const [h, p] = msgs[filter] || msgs.all;
       listEl.innerHTML = `<div class="empty"><strong>${h}</strong><p>${p}</p></div>`;
@@ -473,13 +635,13 @@
     if (normal.length) { if (high.length) html += '<div class="sec-label">Tasks</div>'; html += normal.map(card).join(''); }
     if (done.length)   { html += '<div class="sec-label">Completed</div>' + done.map(card).join(''); }
     listEl.innerHTML = html;
-  }
+  };
 
   function card(t) {
-    const today    = todayStr();
-    const isOver   = t.date && !t.done && t.date < today;
-    const isToday  = t.date === today && !t.done;
-    const ds       = fmtDate(t);
+    const today   = todayStr();
+    const isOver  = t.date && !t.done && t.date < today;
+    const isToday = t.date === today && !t.done;
+    const ds      = fmtDate(t);
 
     let dateTag = '';
     if (ds) {
@@ -487,27 +649,26 @@
       else if (isToday) dateTag = `<span class="tag tag-today">${esc(ds)}</span>`;
       else              dateTag = `<span class="tag tag-date">${esc(ds)}</span>`;
     }
-
-    const catTag = t.cat           ? `<span class="tag tag-cat">${esc(t.cat)}</span>` : '';
+    const catTag = t.cat ? `<span class="tag tag-cat">${esc(t.cat)}</span>` : '';
     const priTag = t.pri === 'high' && !t.done ? `<span class="tag tag-high">High priority</span>` : '';
 
     const cls = ['task-card',
-      t.done    ? 'done'      : '',
-      isOver    ? 'overdue'   : '',
-      isToday   ? 'due-today' : ''
+      t.done   ? 'done'      : '',
+      isOver   ? 'overdue'   : '',
+      isToday  ? 'due-today' : ''
     ].filter(Boolean).join(' ');
 
     return `
     <div class="${cls}">
       <div class="chk-wrap">
-        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle(${t.id})">
+        <input type="checkbox" ${t.done ? 'checked' : ''} onchange="toggle('${t.id}', ${t.done})">
       </div>
       <div class="task-body">
         <div class="task-title">${esc(t.title)}</div>
         ${t.note ? `<div class="task-note">${esc(t.note)}</div>` : ''}
         <div class="task-meta">${dateTag}${catTag}${priTag}</div>
       </div>
-      <button class="del-btn" onclick="remove(${t.id})" title="Delete">&#x2715;</button>
+      <button class="del-btn" onclick="remove('${t.id}')" title="Delete">&#x2715;</button>
     </div>`;
   }
 
@@ -520,8 +681,6 @@
   document.getElementById('f-title').addEventListener('keydown', e => {
     if (e.key === 'Enter') addTask();
   });
-
-  load();
 </script>
 </body>
 </html>
